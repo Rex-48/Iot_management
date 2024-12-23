@@ -144,16 +144,16 @@
         // Log specific values
         console.log('Temperature:', data.temperature);
         console.log('Humidity:', data.humidity);
-        console.log('Gas Concentration:', data.gas_concentration);
-        console.log('Motion Detected:', data.motion_detected);
+        console.log('Gas Concentration:', data.gasConcentration);  // Use correct key
+        console.log('Motion Detected:', data.motionDetected);      // Use correct key
 
         // Update chart with temperature and humidity
         tempHumidityChart.data.datasets[0].data = [data.temperature, data.humidity];
         tempHumidityChart.update();
 
         // Update gas concentration and motion detection
-        updateGasLevel(data.gas_concentration);
-        updateMotionStatus(data.motion_detected);
+        updateGasLevel(data.gasConcentration);  // Use correct key
+        updateMotionStatus(data.motionDetected); // Use correct key
 
       } catch (error) {
         console.error('Error fetching data:', error);

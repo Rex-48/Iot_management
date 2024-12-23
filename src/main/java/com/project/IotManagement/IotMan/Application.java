@@ -5,6 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.Random;
+
 @SpringBootApplication
 public class Application {
 
@@ -23,14 +25,16 @@ public class Application {
 	@RequestMapping("/api")
 	public static class SensorDataController {
 
-		// Endpoint to receive data from Raspberry Pi
+		// Endpoint to receive data from Raspberry Pi and simulate gas and motion data
 		@PostMapping("/sensor-data")
 		public String receiveData(@RequestBody SensorData data) {
-			// Update the variables with data sent from Raspberry Pi
+			// Update the temperature and humidity with the data received from Raspberry Pi
 			temperature = data.getTemperature();
 			humidity = data.getHumidity();
-			gasConcentration = data.getGasConcentration();
-			motionDetected = data.isMotionDetected();
+
+			// Simulate random gas concentration and motion detection
+			gasConcentration = generateRandomGasConcentration();
+			motionDetected = generateRandomMotionDetection();
 
 			System.out.println("Received Data: " + data); // Log the received data
 			return "Data received successfully";
@@ -39,7 +43,20 @@ public class Application {
 		// Endpoint to send the latest sensor data to the frontend
 		@GetMapping("/sensor-data")
 		public SensorData getData() {
+			// Log and return the current data (including simulated gas and motion)
+			System.out.println("Returning Data: Temperature = " + temperature + ", Humidity = " + humidity
+					+ ", Gas Concentration = " + gasConcentration + ", Motion Detected = " + motionDetected);
 			return new SensorData(temperature, humidity, gasConcentration, motionDetected);
+		}
+
+		private int generateRandomGasConcentration() {
+			Random rand = new Random();
+			return rand.nextInt(500); // Simulate random gas concentration between 0 and 500
+		}
+
+		private boolean generateRandomMotionDetection() {
+			Random rand = new Random();
+			return rand.nextBoolean(); // Simulate random motion detection (true or false)
 		}
 	}
 
