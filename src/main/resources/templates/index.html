@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Monitoring Dashboard</title>
+    <style>
+        /* General styling */
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+          background: #f4f7fc;
+          color: #333;
+        }
+
+        .container {
+          max-width: 800px;
+          margin: 20px auto;
+          padding: 20px;
+          background: #fff;
+          border-radius: 8px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+          text-align: center;
+          color: #444;
+        }
+
+        .section {
+          margin-top: 30px;
+        }
+
+        .motion-status {
+          text-align: center;
+          font-size: 18px;
+          font-weight: bold;
+          margin-top: 20px;
+          padding: 10px;
+          border: 2px solid #4caf50;
+          border-radius: 8px;
+          color: #fff;
+          background-color: #4caf50;
+        }
+
+        .motion-status.inactive {
+          background-color: #f44336;
+          border-color: #f44336;
+        }
+
+        .gas-level {
+          text-align: center;
+          font-size: 18px;
+          font-weight: bold;
+          margin-top: 20px;
+        }
+
+        canvas {
+          display: block;
+          margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>IoT Monitoring Dashboard</h1>
+
+    <!-- Temperature and Humidity Section -->
+    <div class="section">
+        <h2>Temperature & Humidity</h2>
+        <canvas id="tempHumidityGraph" width="400" height="200"></canvas>
+    </div>
+
+    <!-- Gas Sensor Section -->
+    <div class="section">
+        <h2>Gas Levels</h2>
+        <div id="gasLevelDisplay" class="gas-level">Gas Concentration: 0 ppm</div>
+    </div>
+
+    <!-- Motion Detection Section -->
+    <div class="section">
+        <h2>Motion Detection</h2>
+        <div id="motionStatus" class="motion-status inactive">No Motion Detected</div>
+    </div>
+</div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Inline JavaScript -->
+<script>
+    // Initialize the temperature and humidity chart
+    const ctx = document.getElementById('tempHumidityGraph').getContext('2d');
+    const tempHumidityChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Temperature (°C)', 'Humidity (%)'],
+        datasets: [{
+          label: 'Sensor Data',
+          data: [0, 0], // Initial values
+          backgroundColor: ['#4caf50', '#2196f3']
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Function to update the gas concentration display
+    function updateGasLevel(value) {
+      const gasLevelDisplay = document.getElementById('gasLevelDisplay');
+      gasLevelDisplay.textContent = `Gas Concentration: ${value} ppm`;
+    }
+
+    // Function to update the motion detection status
+    function updateMotionStatus(isMotionDetected) {
+      const motionStatus = document.getElementById('motionStatus');
+      if (isMotionDetected) {
+        motionStatus.textContent = 'Motion Detected';
+        motionStatus.classList.remove('inactive');
+      } else {
+        motionStatus.textContent = 'No Motion Detected';
+        motionStatus.classList.add('inactive');
+      }
+    }
+
+    // Function to fetch data from the backend API
+    async function fetchData() {
+      try {
+        const response = await fetch('/api/sensor-data');
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('Fetched Data:', data); // Log the entire response data
+
+        // Log specific values
+        console.log('Temperature:', data.temperature);
+        console.log('Humidity:', data.humidity);
+        console.log('Gas Concentration:', data.gas_concentration);
+        console.log('Motion Detected:', data.motion_detected);
+
+        // Update chart with temperature and humidity
+        tempHumidityChart.data.datasets[0].data = [data.temperature, data.humidity];
+        tempHumidityChart.update();
+
+        // Update gas concentration and motion detection
+        updateGasLevel(data.gas_concentration);
+        updateMotionStatus(data.motion_detected);
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+
+    // Fetch data every 2 seconds
+    setInterval(fetchData, 2000);
+</script>
+</body>
+</html>
